@@ -1,5 +1,7 @@
 module FreeMart
   class Provider
+    attr_accessor :proxy
+
     def initialize value = nil, &block
       @value = value
       @block = block
@@ -7,7 +9,11 @@ module FreeMart
 
     def call *args
       if @block
-        @block.call *args
+        if @proxy
+          @block.call proxy, *args
+        else
+          @block.call *args
+        end
       else
         @value
       end

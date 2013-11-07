@@ -40,6 +40,31 @@ module FreeMart
     result == NOT_FOUND ? raise : result
   end
 
+  def self.reregister name, value = nil, &block
+    provider = if block_given?
+                 Provider.new value, &block
+               else
+                 value
+               end
+
+    if @providers.has_key? name
+      found = @providers[name]
+      provider.proxy = found
+    end
+
+    @providers[name] = provider
+
+    provider
+  end
+
+  def self.deregister name, provider
+    found = @providers[name]
+
+    if found == provider
+      @providers.delete name
+    end
+  end
+
   def self.clear
     @providers.clear
   end

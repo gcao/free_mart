@@ -19,6 +19,29 @@ describe "FreeMart" do
     lambda { FreeMart.request('key') }.should raise_error
   end
 
+  it "#deregister should work" do
+    provider = FreeMart.register 'key', 'value'
+    FreeMart.request('key').should == 'value'
+    FreeMart.deregister 'key', provider
+    lambda { FreeMart.request('key') }.should raise_error
+  end
+
+  it "#reregister should work" do
+    FreeMart.register 'key', 'value'
+    FreeMart.request('key').should == 'value'
+
+    FreeMart.reregister 'key' do |proxy, *args|
+      old_result = if proxy.respond_to? :call
+                     proxy.call
+                   else
+                     proxy
+                   end
+
+      "#{old_result} #{args.join(' ')}"
+    end
+    FreeMart.request('key', 'a', 'b').should == 'value a b'
+  end
+
   it "clear should work" do
     FreeMart.register 'key', 'value'
     FreeMart.clear
