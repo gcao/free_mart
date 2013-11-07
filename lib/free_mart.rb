@@ -23,6 +23,8 @@ module FreeMart
     else
       @providers[name] = provider
     end
+
+    provider
   end
 
   def self.request name, *args

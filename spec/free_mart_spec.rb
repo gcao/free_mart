@@ -5,13 +5,18 @@ describe "FreeMart" do
     FreeMart.clear
   end
 
-  it "should raise error if not found" do
-    lambda { FreeMart.request('key') }.should raise_error
-  end
-
   it "should work" do
     FreeMart.register 'key', 'value'
     FreeMart.request('key').should == 'value'
+  end
+
+  it "#register should return the value if the value is a constant" do
+    provider = FreeMart.register 'key', 'value'
+    provider.should == 'value'
+  end
+
+  it "should raise error if not found" do
+    lambda { FreeMart.request('key') }.should raise_error
   end
 
   it "clear should work" do
@@ -23,6 +28,11 @@ describe "FreeMart" do
   it "block should work" do
     FreeMart.register('key'){ 'value' }
     FreeMart.request('key').should == 'value'
+  end
+
+  it "#register should return a provider if a block is passed in" do
+    provider = FreeMart.register('key'){ 'value' }
+    provider.call.should == 'value'
   end
 
   it "block with arguments should work" do
