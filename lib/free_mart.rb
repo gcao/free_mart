@@ -1,15 +1,27 @@
 require 'free_mart/provider'
+require 'free_mart/provider_list'
 
 module FreeMart
-  #NOT_FOUND = Object.new
+  NOT_FOUND = Object.new
 
   @providers = {}
 
   def self.register name, value = nil, &block
-    if block_given?
-      @providers[name] = Provider.new value, &block
+    provider = if block_given?
+                 Provider.new value, &block
+               else
+                 value
+               end
+
+    if @providers.has_key? name
+      found = @providers[name]
+      if found.is_a? ProviderList
+        found << provider
+      else
+        @providers[name] = ProviderList.new(found, provider)
+      end
     else
-      @providers[name] = value
+      @providers[name] = provider
     end
   end
 
@@ -26,6 +38,14 @@ module FreeMart
 
   def self.clear
     @providers.clear
+  end
+
+  def self.providers
+    @providers
+  end
+
+  def self.not_found
+    NOT_FOUND
   end
 end
 

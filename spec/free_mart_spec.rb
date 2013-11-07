@@ -31,4 +31,23 @@ describe "FreeMart" do
     end
     FreeMart.request('key', 'before', 'after').should == 'before value after'
   end
+
+  it "should support multiple providers for same key" do
+    FreeMart.register('key') do |index|
+      if index == 1
+        'first'
+      else
+        FreeMart.not_found
+      end
+    end
+    FreeMart.register('key') do |index|
+      if index == 2
+        'second'
+      else
+        FreeMart.not_found
+      end
+    end
+    FreeMart.request('key', 1).should == 'first'
+    FreeMart.request('key', 2).should == 'second'
+  end
 end
