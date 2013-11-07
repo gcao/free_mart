@@ -29,11 +29,13 @@ module FreeMart
     raise unless @providers.has_key? name
 
     provider = @providers[name]
-    if provider.respond_to? :call
-      provider.call *args
-    else
-      provider
-    end
+    result = if provider.respond_to? :call
+               provider.call *args
+             else
+               provider
+             end
+
+    result == NOT_FOUND ? raise : result
   end
 
   def self.clear

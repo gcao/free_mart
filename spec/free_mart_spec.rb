@@ -49,5 +49,6 @@ describe "FreeMart" do
     end
     FreeMart.request('key', 1).should == 'first'
     FreeMart.request('key', 2).should == 'second'
+    lambda { FreeMart.request('key', 3) }.should raise_error
   end
 end
