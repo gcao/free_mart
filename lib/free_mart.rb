@@ -6,9 +6,11 @@ module FreeMart
 
   @providers = {}
 
-  def self.register name, value = nil, &block
+  def self.register name, *rest, &block
+    value, options = handle_args block_given?, *rest
+
     provider = if block_given?
-                 Provider.new value, &block
+                 Provider.new value, options, &block
                else
                  value
                end
@@ -40,9 +42,24 @@ module FreeMart
     result == NOT_FOUND ? raise : result
   end
 
-  def self.reregister name, value = nil, &block
+  def self.requestAll name, *args
+    raise unless @providers.has_key? name
+
+    provider = @providers[name]
+    result = if provider.respond_to? :call
+               provider.call *args
+             else
+               provider
+             end
+
+    result == NOT_FOUND ? raise : result
+  end
+
+  def self.reregister name, *rest, &block
+    value, options = handle_args block_given?, *rest
+
     provider = if block_given?
-                 Provider.new value, &block
+                 Provider.new value, options, &block
                else
                  value
                end
@@ -76,5 +93,19 @@ module FreeMart
   def self.not_found
     NOT_FOUND
   end
+
+  private
+
+  def self.handle_args has_block, *args
+    if has_block
+      value = NOT_FOUND
+    else
+      value = args.shift
+    end
+    default_options = {}
+    options = default_options.merge args.first if args.first
+    [value, options]
+  end
+
 end
 

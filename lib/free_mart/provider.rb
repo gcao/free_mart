@@ -1,10 +1,11 @@
 module FreeMart
   class Provider
-    attr_accessor :proxy
+    attr_accessor :options, :proxy
 
-    def initialize value = nil, &block
-      @value = value
-      @block = block
+    def initialize value, options, &block
+      @value   = value
+      @options = options
+      @block   = block
     end
 
     def call *args

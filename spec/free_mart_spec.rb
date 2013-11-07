@@ -42,10 +42,20 @@ describe "FreeMart" do
     FreeMart.request('key', 'a', 'b').should == 'value a b'
   end
 
-  it "clear should work" do
+  it "#clear should work" do
     FreeMart.register 'key', 'value'
     FreeMart.clear
     lambda { FreeMart.request('key') }.should raise_error
+  end
+
+  it "#clear can take list of keys" do
+    FreeMart.register 'a', 'aa'
+    FreeMart.register 'b', 'bb'
+    FreeMart.register 'c', 'cc'
+    FreeMart.clear 'a', 'b'
+    lambda { FreeMart.request('a') }.should raise_error
+    lambda { FreeMart.request('b') }.should raise_error
+    FreeMart.request('c').should == 'cc'
   end
 
   it "block should work" do
@@ -83,5 +93,29 @@ describe "FreeMart" do
     FreeMart.request('key', 1).should == 'first'
     FreeMart.request('key', 2).should == 'second'
     lambda { FreeMart.request('key', 3) }.should raise_error
+  end
+
+  it "#requestAll should work" do
+    pending
+    FreeMart.register 'key', 'a'
+    FreeMart.register 'key', 'b'
+    FreeMart.requestAll('key').should == ['a', 'b']
+  end
+
+  it "#requestAll should merge hash" do
+    pending
+    FreeMart.register 'key', a: 'aa'
+    FreeMart.register 'key', b: 'bb'
+    FreeMart.requestAll('key').should == {a: 'aa', b: 'bb'}
+  end
+
+  it "key arg can be anything but is converted to string" do
+    pending
+    FreeMart.register :a, 'aa'
+    FreeMart.request(:a).should == 'aa'
+    FreeMart.request('a').should == 'aa'
+    FreeMart.register 2, 22
+    FreeMart.request('2').should == 22
+    FreeMart.request(:'2').should == 22
   end
 end
