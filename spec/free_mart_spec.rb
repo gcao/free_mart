@@ -30,13 +30,8 @@ describe "FreeMart" do
     FreeMart.register 'key', 'value'
     FreeMart.request('key').should == 'value'
 
-    FreeMart.reregister 'key' do |proxy, *args|
-      old_result = if proxy.respond_to? :call
-                     proxy.call
-                   else
-                     proxy
-                   end
-
+    FreeMart.reregister 'key' do |*args|
+      old_result = FreeMart.request 'key', *args
       "#{old_result} #{args.join(' ')}"
     end
     FreeMart.request('key', 'a', 'b').should == 'value a b'

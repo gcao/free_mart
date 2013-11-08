@@ -6,33 +6,33 @@ module FreeMart
 
   @providers = {}
 
-  def self.register name, *rest, &block
+  def self.register key, *rest, &block
     value, options = handle_args block_given?, *rest
 
     provider = if block_given?
-                 Provider.new value, options, &block
+                 Provider.new key, value, options, &block
                else
                  value
                end
 
-    if @providers.has_key? name
-      found = @providers[name]
+    if @providers.has_key? key
+      found = @providers[key]
       if found.is_a? ProviderList
         found << provider
       else
-        @providers[name] = ProviderList.new(found, provider)
+        @providers[key] = ProviderList.new(key, found, provider)
       end
     else
-      @providers[name] = provider
+      @providers[key] = provider
     end
 
     provider
   end
 
-  def self.request name, *args
-    raise unless @providers.has_key? name
+  def self.request key, *args
+    raise unless @providers.has_key? key
 
-    provider = @providers[name]
+    provider = @providers[key]
     result = if provider.respond_to? :call
                provider.call *args
              else
@@ -42,10 +42,10 @@ module FreeMart
     result == NOT_FOUND ? raise : result
   end
 
-  def self.requestAll name, *args
-    raise unless @providers.has_key? name
+  def self.requestAll key, *args
+    raise unless @providers.has_key? key
 
-    provider = @providers[name]
+    provider = @providers[key]
     result = if provider.respond_to? :call
                provider.call *args
              else
@@ -55,35 +55,39 @@ module FreeMart
     result == NOT_FOUND ? raise : result
   end
 
-  def self.reregister name, *rest, &block
+  def self.reregister key, *rest, &block
     value, options = handle_args block_given?, *rest
 
     provider = if block_given?
-                 Provider.new value, options, &block
+                 Provider.new key, value, options, &block
                else
                  value
                end
 
-    if @providers.has_key? name
-      found = @providers[name]
+    if @providers.has_key? key
+      found = @providers[key]
       provider.proxy = found
     end
 
-    @providers[name] = provider
+    @providers[key] = provider
 
     provider
   end
 
-  def self.deregister name, provider
-    found = @providers[name]
+  def self.deregister key, provider
+    found = @providers[key]
 
     if found == provider
-      @providers.delete name
+      @providers.delete key
     end
   end
 
-  def self.clear
-    @providers.clear
+  def self.clear *keys
+    if keys.length > 0
+      keys.each {|key| @providers.delete key }
+    else
+      @providers.clear
+    end
   end
 
   def self.providers
