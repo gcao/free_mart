@@ -98,18 +98,38 @@ describe "FreeMart" do
     lambda { FreeMart.request('key', 3) }.should raise_error
   end
 
-  it "#requestAll should work" do
-    pending
+  it "collect results from multiple providers should work" do
     FreeMart.register 'key', 'a'
     FreeMart.register 'key', 'b'
-    FreeMart.requestAll('key').should == ['a', 'b']
+    FreeMart.reregister 'key' do
+      providers = FreeMart.providers['key']
+      combined = []
+      providers.each do |provider|
+        result = provider.call
+        if result != FreeMart::NOT_FOUND
+          combined << result
+        end
+      end
+      combined
+    end
+    FreeMart.request('key').should == ['a', 'b']
   end
 
-  it "#requestAll should merge hash" do
-    pending
+  it "merge hashes from multiple providers should work" do
     FreeMart.register 'key', a: 'aa'
     FreeMart.register 'key', b: 'bb'
-    FreeMart.requestAll('key').should == {a: 'aa', b: 'bb'}
+    FreeMart.reregister 'key' do
+      providers = FreeMart.providers['key']
+      combined = {}
+      providers.each do |provider|
+        result = provider.call
+        if result != FreeMart::NOT_FOUND
+          combined.merge! result
+        end
+      end
+      combined
+    end
+    FreeMart.request('key').should == {a: 'aa', b: 'bb'}
   end
 
   it "key arg can be symbol but is converted to string" do
