@@ -9,11 +9,7 @@ module FreeMart
   def self.register key, *rest, &block
     value, options = handle_args block_given?, *rest
 
-    provider = if block_given?
-                 Provider.new key, value, options, &block
-               else
-                 value
-               end
+    provider = Provider.new key, value, options, &block
 
     if @providers.has_key? key
       found = @providers[key]
@@ -30,39 +26,21 @@ module FreeMart
   end
 
   def self.request key, *args
-    raise unless @providers.has_key? key
+    raise "No provider is registered for #{key}." unless @providers.has_key? key
 
     provider = @providers[key]
-    result = if provider.respond_to? :call
-               provider.call *args
-             else
-               provider
-             end
-
-    result == NOT_FOUND ? raise : result
+    result = provider.call *args
+    result == NOT_FOUND ? raise("No result is returned.") : result
   end
 
   def self.requestAll key, *args
-    raise unless @providers.has_key? key
-
-    provider = @providers[key]
-    result = if provider.respond_to? :call
-               provider.call *args
-             else
-               provider
-             end
-
-    result == NOT_FOUND ? raise : result
+    raise 'TODO'
   end
 
   def self.reregister key, *rest, &block
     value, options = handle_args block_given?, *rest
 
-    provider = if block_given?
-                 Provider.new key, value, options, &block
-               else
-                 value
-               end
+    provider = Provider.new key, value, options, &block
 
     if @providers.has_key? key
       found = @providers[key]
@@ -78,7 +56,11 @@ module FreeMart
     found = @providers[key]
 
     if found == provider
-      @providers.delete key
+      if found.proxy
+        @providers[key] = found.proxy
+      else
+        @providers.delete key
+      end
     end
   end
 

@@ -10,9 +10,10 @@ describe "FreeMart" do
     FreeMart.request('key').should == 'value'
   end
 
-  it "#register should return the value if the value is a constant" do
+  it "#register should return the provider" do
     provider = FreeMart.register 'key', 'value'
-    provider.should == 'value'
+    provider.is_a?(FreeMart::Provider).should be_true
+    provider.call.should == 'value'
   end
 
   it "should raise error if not found" do
@@ -35,6 +36,14 @@ describe "FreeMart" do
       "#{old_result} #{args.join(' ')}"
     end
     FreeMart.request('key', 'a', 'b').should == 'value a b'
+  end
+
+  it "#deregister and reregister should work together" do
+    old_provider = FreeMart.register 'key', 'old'
+    new_provider = FreeMart.reregister 'key', 'new'
+    FreeMart.request('key').should == 'new'
+    FreeMart.deregister 'key', new_provider
+    FreeMart.request('key').should == 'old'
   end
 
   it "#clear should work" do
