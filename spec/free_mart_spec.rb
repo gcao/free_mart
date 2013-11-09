@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe "FreeMart" do
+describe FreeMart do
   before do
     FreeMart.clear
   end
@@ -15,8 +15,12 @@ describe "FreeMart" do
     provider.call.should == 'value'
   end
 
-  it "should raise error if not found" do
+  it "#request should raise error if not found" do
     lambda { FreeMart.request('key') }.should raise_error
+  end
+
+  it "#request_no_error should return NOT_FOUND if not found" do
+    FreeMart.request_no_error('key').should == FreeMart::NOT_FOUND
   end
 
   it "#deregister should work" do
@@ -31,13 +35,25 @@ describe "FreeMart" do
     FreeMart.request('key').should == 'value'
 
     FreeMart.reregister 'key' do |*args|
-      old_result = FreeMart.request 'key', *args
-      "#{old_result} #{args.join(' ')}"
+      old_result = FreeMart.request_no_error 'key', *args
+      if old_result == FreeMart::NOT_FOUND
+        FreeMart::NOT_FOUND
+      else
+        "#{old_result} #{args.join(' ')}"
+      end
     end
     FreeMart.request('key', 'a', 'b').should == 'value a b'
   end
 
-  it "#deregister and reregister should work together" do
+  it "#reregister and #request_no_error should return NOT_FOUND if not found" do
+    FreeMart.register('key'){ FreeMart::NOT_FOUND }
+    FreeMart.reregister 'key' do |*args|
+      FreeMart.request_no_error 'key', *args
+    end
+    FreeMart.request_no_error('key').should == FreeMart::NOT_FOUND
+  end
+
+  it "#deregister and #reregister should work together" do
     old_provider = FreeMart.register 'key', 'old'
     new_provider = FreeMart.reregister 'key', 'new'
     FreeMart.request('key').should == 'new'
@@ -134,7 +150,10 @@ describe "FreeMart" do
 
   it "key arg can be symbol but is converted to string" do
     FreeMart.register :a, 'aa'
-    FreeMart.request(:a).should == 'aa'
+    FreeMart.request(:a).should  == 'aa'
     FreeMart.request('a').should == 'aa'
+    FreeMart.register 'b', 'bb'
+    FreeMart.request(:b).should  == 'bb'
+    FreeMart.request('b').should == 'bb'
   end
 end

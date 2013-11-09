@@ -31,15 +31,26 @@ module FreeMart
   def self.request key, *args
     key = key.to_s
 
-    raise "No provider is registered for #{key}." unless @providers.has_key? key
-
     provider = @providers[key]
-    result = provider.call *args
-    result == NOT_FOUND ? raise("No result is returned.") : result
+
+    if provider
+      result = provider.call *args
+      result == NOT_FOUND ? raise("No result is returned.") : result
+    else
+      raise "No provider is registered for #{key}."
+    end
   end
 
-  def self.requestAll key, *args
-    raise 'TODO'
+  def self.request_no_error key, *args
+    key = key.to_s
+
+    provider = @providers[key]
+
+    if provider
+      provider.call *args
+    else
+      NOT_FOUND
+    end
   end
 
   def self.reregister key, *rest, &block
