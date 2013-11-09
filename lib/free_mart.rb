@@ -1,4 +1,5 @@
 require 'free_mart/provider'
+require 'free_mart/simple_provider'
 require 'free_mart/provider_list'
 
 module FreeMart
@@ -7,9 +8,11 @@ module FreeMart
   @providers = {}
 
   def self.register key, *rest, &block
+    key = key.to_s
+
     value, options = handle_args block_given?, *rest
 
-    provider = Provider.new key, value, options, &block
+    provider = create_provider key, value, options, &block
 
     if @providers.has_key? key
       found = @providers[key]
@@ -26,6 +29,8 @@ module FreeMart
   end
 
   def self.request key, *args
+    key = key.to_s
+
     raise "No provider is registered for #{key}." unless @providers.has_key? key
 
     provider = @providers[key]
@@ -38,9 +43,11 @@ module FreeMart
   end
 
   def self.reregister key, *rest, &block
+    key = key.to_s
+
     value, options = handle_args block_given?, *rest
 
-    provider = Provider.new key, value, options, &block
+    provider = create_provider key, value, options, &block
 
     if @providers.has_key? key
       found = @providers[key]
@@ -53,6 +60,8 @@ module FreeMart
   end
 
   def self.deregister key, provider
+    key = key.to_s
+
     found = @providers[key]
 
     if found == provider
@@ -66,7 +75,7 @@ module FreeMart
 
   def self.clear *keys
     if keys.length > 0
-      keys.each {|key| @providers.delete key }
+      keys.each {|key| @providers.delete key.to_s }
     else
       @providers.clear
     end
@@ -93,5 +102,14 @@ module FreeMart
     [value, options]
   end
 
+  def self.create_provider key, value, options, &block
+    if block_given?
+      Provider.new key, NOT_FOUND, options, &block
+    elsif value.respond_to? :call
+      Provider.new key, value, options
+    else
+      SimpleProvider.new key, value, options
+    end
+  end
 end
 

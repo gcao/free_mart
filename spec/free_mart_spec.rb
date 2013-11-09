@@ -10,9 +10,8 @@ describe "FreeMart" do
     FreeMart.request('key').should == 'value'
   end
 
-  it "#register should return the provider" do
+  it "#register should return a provider that can be 'call'ed" do
     provider = FreeMart.register 'key', 'value'
-    provider.is_a?(FreeMart::Provider).should be_true
     provider.call.should == 'value'
   end
 
@@ -113,13 +112,9 @@ describe "FreeMart" do
     FreeMart.requestAll('key').should == {a: 'aa', b: 'bb'}
   end
 
-  it "key arg can be anything but is converted to string" do
-    pending
+  it "key arg can be symbol but is converted to string" do
     FreeMart.register :a, 'aa'
     FreeMart.request(:a).should == 'aa'
     FreeMart.request('a').should == 'aa'
-    FreeMart.register 2, 22
-    FreeMart.request('2').should == 22
-    FreeMart.request(:'2').should == 22
   end
 end
