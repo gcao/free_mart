@@ -156,4 +156,22 @@ describe FreeMart do
     FreeMart.request(:b).should  == 'bb'
     FreeMart.request('b').should == 'bb'
   end
+
+  it "#accept? should work" do
+    FreeMart.accept?(:a).should be_false
+    FreeMart.register :b, 'bb'
+    FreeMart.accept?(:b).should be_true
+  end
+
+  it "#providers should work" do
+    FreeMart.register :a, 'aa'
+    FreeMart.providers.size.should == 1
+    FreeMart.providers.should have_key 'a'
+  end
+
+  it "#provider_for should work" do
+    FreeMart.provider_for(:a).should be_nil
+    FreeMart.register :b, 'bb'
+    FreeMart.provider_for(:b).should_not be_nil
+  end
 end

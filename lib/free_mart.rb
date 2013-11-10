@@ -53,6 +53,10 @@ module FreeMart
     end
   end
 
+  def self.accept? key
+    @providers.has_key? key.to_s
+  end
+
   def self.reregister key, *rest, &block
     key = key.to_s
 
@@ -94,6 +98,10 @@ module FreeMart
 
   def self.providers
     @providers
+  end
+
+  def self.provider_for key
+    @providers[key.to_s]
   end
 
   def self.not_found
