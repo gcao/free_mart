@@ -1,11 +1,17 @@
 require 'free_mart/provider'
 require 'free_mart/simple_provider'
-require 'free_mart/provider_list'
+#require 'free_mart/provider_list'
+require 'free_mart/registry'
+require 'free_mart/hash_registry'
 
 module FreeMart
   NOT_FOUND = Object.new
 
-  @providers = {}
+  @registry = Registry.new
+
+  def self.registry
+    @registry
+  end
 
   def self.register key, *rest, &block
     key = key.to_s
@@ -13,17 +19,18 @@ module FreeMart
     value, options = handle_args block_given?, *rest
 
     provider = create_provider key, value, options, &block
+    @registry.add key, provider
 
-    if @providers.has_key? key
-      found = @providers[key]
-      if found.is_a? ProviderList
-        found << provider
-      else
-        @providers[key] = ProviderList.new(key, found, provider)
-      end
-    else
-      @providers[key] = provider
-    end
+    #if @registry.has_key? key
+    #  found = @registry[key]
+    #  if found.is_a? ProviderList
+    #    found << provider
+    #  else
+    #    @registry[key] = ProviderList.new(key, found, provider)
+    #  end
+    #else
+    #  @registry[key] = provider
+    #end
 
     provider
   end
@@ -31,20 +38,21 @@ module FreeMart
   def self.request key, *args
     key = key.to_s
 
-    provider = @providers[key]
+    @registry.process key, {}, *args
+    #provider = @registry[key]
 
-    if provider
-      result = provider.call *args
-      result == NOT_FOUND ? raise("No result is returned.") : result
-    else
-      raise "No provider is registered for #{key}."
-    end
+    #if provider
+    #  result = provider.call *args
+    #  result == NOT_FOUND ? raise("No result is returned.") : result
+    #else
+    #  raise "No provider is registered for #{key}."
+    #end
   end
 
   def self.request_no_error key, *args
     key = key.to_s
 
-    provider = @providers[key]
+    provider = @registry[key]
 
     if provider
       provider.call *args
@@ -54,55 +62,58 @@ module FreeMart
   end
 
   def self.accept? key
-    @providers.has_key? key.to_s
+    @registry.accept? key.to_s
   end
 
-  def self.reregister key, *rest, &block
-    key = key.to_s
+  #def self.reregister key, *rest, &block
+  #  key = key.to_s
 
-    value, options = handle_args block_given?, *rest
+  #  value, options = handle_args block_given?, *rest
 
-    provider = create_provider key, value, options, &block
+  #  provider = create_provider key, value, options, &block
 
-    if @providers.has_key? key
-      found = @providers[key]
-      provider.proxy = found
-    end
+  #  if @registry.has_key? key
+  #    found = @registry[key]
+  #    provider.proxy = found
+  #  end
 
-    @providers[key] = provider
+  #  @registry[key] = provider
 
-    provider
+  #  provider
+  #end
+
+  #def self.deregister key, provider
+  #  key = key.to_s
+
+  #  found = @registry[key]
+
+  #  if found == provider
+  #    if found.proxy
+  #      @registry[key] = found.proxy
+  #    else
+  #      @registry.delete key
+  #    end
+  #  end
+  #end
+
+  def self.clear
+    @registry.clear
   end
+  #def self.clear *keys
+  #  if keys.length > 0
+  #    keys.each {|key| @registry.delete key.to_s }
+  #  else
+  #    @registry.clear
+  #  end
+  #end
 
-  def self.deregister key, provider
-    key = key.to_s
+  #def self.providers
+  #  @registry
+  #end
 
-    found = @providers[key]
-
-    if found == provider
-      if found.proxy
-        @providers[key] = found.proxy
-      else
-        @providers.delete key
-      end
-    end
-  end
-
-  def self.clear *keys
-    if keys.length > 0
-      keys.each {|key| @providers.delete key.to_s }
-    else
-      @providers.clear
-    end
-  end
-
-  def self.providers
-    @providers
-  end
-
-  def self.provider_for key
-    @providers[key.to_s]
-  end
+  #def self.provider_for key
+  #  @registry[key.to_s]
+  #end
 
   def self.not_found
     NOT_FOUND
