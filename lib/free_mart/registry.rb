@@ -1,11 +1,15 @@
 module FreeMart
   class Registry < Array
     def add key, provider
-      if last and not last.accept? key
+      if last.is_a? HashRegistry and not last.accept? key
         last[key] = provider
       else
-        child_registry = HashRegistry.new
-        child_registry[key] = provider
+        if key.is_a? String
+          child_registry = HashRegistry.new
+          child_registry[key] = provider
+        else
+          child_registry = FuzzyRegistry.new key, provider
+        end
         push child_registry
       end
     end

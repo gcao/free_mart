@@ -1,8 +1,10 @@
 require 'free_mart/provider'
 require 'free_mart/simple_provider'
 #require 'free_mart/provider_list'
+require 'free_mart/in_use'
 require 'free_mart/registry'
 require 'free_mart/hash_registry'
+require 'free_mart/fuzzy_registry'
 
 module FreeMart
   NOT_FOUND = Object.new
@@ -14,7 +16,7 @@ module FreeMart
   end
 
   def self.register key, *rest, &block
-    key = key.to_s
+    key = key.to_s if key.is_a? Symbol
 
     value, options = handle_args block_given?, *rest
 

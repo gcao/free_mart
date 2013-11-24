@@ -15,6 +15,11 @@ describe FreeMart do
     provider.call.should == 'value'
   end
 
+  it "#register can take regular expression" do
+    FreeMart.register /key/, 'value'
+    FreeMart.request('key1').should == 'value'
+  end
+
   #it "#request should raise error if not found" do
   #  lambda { FreeMart.request('key') }.should raise_error
   #end
