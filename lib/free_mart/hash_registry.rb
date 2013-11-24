@@ -14,7 +14,7 @@ module FreeMart
       @in_use << key
       provider = self[key]
       return NOT_FOUND unless provider
-      provider.call *args
+      provider.call options, *args
     ensure
       @in_use.delete key
     end

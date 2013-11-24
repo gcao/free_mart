@@ -34,7 +34,7 @@ describe FreeMart do
     FreeMart.register 'key', 'value'
     FreeMart.request('key').should == 'value'
 
-    FreeMart.register 'key' do |*args|
+    FreeMart.register 'key' do |_, *args|
       old_result = FreeMart.request 'key', *args
       if old_result == FreeMart::NOT_FOUND
         FreeMart::NOT_FOUND
@@ -82,13 +82,18 @@ describe FreeMart do
     FreeMart.request('key').should == 'value'
   end
 
-  it "#register should return a provider if a block is passed in" do
+  it "parameters are passed to block" do
+    FreeMart.register('key'){|_, *args| args }
+    FreeMart.request('key', 'a', 'b').should == ['a', 'b']
+  end
+
+  it "#register should return a provider" do
     provider = FreeMart.register('key'){ 'value' }
     provider.call.should == 'value'
   end
 
   it "block with arguments should work" do
-    FreeMart.register('key') do |arg1, arg2|
+    FreeMart.register('key') do |_, arg1, arg2|
       "#{arg1} value #{arg2}"
     end
     FreeMart.request('key', 'before', 'after').should == 'before value after'

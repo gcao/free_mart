@@ -49,17 +49,17 @@ module FreeMart
     #end
   end
 
-  def self.request_no_error key, *args
-    key = key.to_s
+  #def self.request_no_error key, *args
+  #  key = key.to_s
 
-    provider = @registry[key]
+  #  provider = @registry[key]
 
-    if provider
-      provider.call *args
-    else
-      NOT_FOUND
-    end
-  end
+  #  if provider
+  #    provider.call *args
+  #  else
+  #    NOT_FOUND
+  #  end
+  #end
 
   def self.accept? key
     @registry.accept? key.to_s
@@ -115,9 +115,9 @@ module FreeMart
   #  @registry[key.to_s]
   #end
 
-  def self.not_found
-    NOT_FOUND
-  end
+  #def self.not_found
+  #  NOT_FOUND
+  #end
 
   private
 
