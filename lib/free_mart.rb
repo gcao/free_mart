@@ -58,6 +58,23 @@ module FreeMart
     #end
   end
 
+  def self.requestAll key, *args
+    key = key.to_s
+
+    result = @registry.process key, {key: key, all: true}, *args
+    if result == NOT_FOUND
+      raise NotFoundError.new(key)
+    else
+      result
+    end
+  end
+
+  def self.requestMulti *key_and_args
+    key_and_args.map do |item|
+      request *item
+    end
+  end
+
   #def self.request_no_error key, *args
   #  key = key.to_s
 

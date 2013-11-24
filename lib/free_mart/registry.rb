@@ -19,12 +19,21 @@ module FreeMart
     end
 
     def process key, options, *args
-      reverse_each do |item|
-        next if item.processing? key
-        result = item.process key, options, *args
-        return result unless result == NOT_FOUND
+      if options[:all]
+        result = []
+        each do |item|
+          item_result = item.process key, options, *args
+          result.push *item_result unless item_result == NOT_FOUND
+        end
+        result
+      else
+        reverse_each do |item|
+          next if item.processing? key
+          result = item.process key, options, *args
+          return result unless result == NOT_FOUND
+        end
+        NOT_FOUND
       end
-      NOT_FOUND
     end
   end
 end

@@ -213,4 +213,23 @@ describe FreeMart do
   #  FreeMart.register :b, 'bb'
   #  FreeMart.provider_for(:b).should_not be_nil
   #end
+
+  it "#requestMulti should work" do
+    FreeMart.register 'key1', 'value1'
+    FreeMart.register 'key2', 'value2'
+    FreeMart.requestMulti('key1', 'key2').should == ['value1', 'value2']
+  end
+
+  it "#requestMulti should work if extra args are passed" do
+    FreeMart.register('key1') {|_, *args| "value1 #{args.join(' ')}"}
+    FreeMart.register 'key2', 'value2'
+    FreeMart.requestMulti(['key1', 'a', 'b'], 'key2').should == ['value1 a b', 'value2']
+  end
+
+  it "#requestAll should work" do
+    FreeMart.register 'key', 'first'
+    FreeMart.register 'key', 'second'
+    FreeMart.requestAll('key').should == ['first', 'second']
+  end
+
 end
