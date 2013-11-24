@@ -1,3 +1,5 @@
+require 'free_mart/not_found_error'
+
 require 'free_mart/provider'
 require 'free_mart/simple_provider'
 #require 'free_mart/provider_list'
@@ -40,7 +42,12 @@ module FreeMart
   def self.request key, *args
     key = key.to_s
 
-    @registry.process key, {}, *args
+    result = @registry.process key, {key: key}, *args
+    if result == NOT_FOUND
+      raise NotFoundError.new(key)
+    else
+      result
+    end
     #provider = @registry[key]
 
     #if provider

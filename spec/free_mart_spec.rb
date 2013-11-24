@@ -10,6 +10,23 @@ describe FreeMart do
     FreeMart.request('key').should == 'value'
   end
 
+  it "block should work" do
+    FreeMart.register('key'){ 'value' }
+    FreeMart.request('key').should == 'value'
+  end
+
+  it "parameters are passed to block" do
+    FreeMart.register('key'){|_, *args| args }
+    FreeMart.request('key', 'a', 'b').should == ['a', 'b']
+  end
+
+  it "block with arguments should work" do
+    FreeMart.register('key') do |_, arg1, arg2|
+      "#{arg1} value #{arg2}"
+    end
+    FreeMart.request('key', 'before', 'after').should == 'before value after'
+  end
+
   it "#register should return a provider that can be 'call'ed" do
     provider = FreeMart.register 'key', 'value'
     provider.call.should == 'value'
@@ -20,8 +37,42 @@ describe FreeMart do
     FreeMart.request('key1').should == 'value'
   end
 
+  it "#register can take an array of regular expressions and strings" do
+    FreeMart.register [/first/, 'second'] do |options|
+      options[:key]
+    end
+    FreeMart.request('first').should == 'first'
+    FreeMart.request('second').should == 'second'
+  end
+
+  it "requested key is passed to callback" do
+    FreeMart.register /key/ do |options|
+      options[:key]
+    end
+    FreeMart.request('key1').should == 'key1'
+    FreeMart.request('key2').should == 'key2'
+  end
+
+  it "provider registered later overwrite previous provider with same key" do
+    FreeMart.register 'key', 'value'
+    FreeMart.register 'key', 'value1'
+    FreeMart.request('key').should == 'value1'
+  end
+
+  it "provider registered later can call request to get value from previous provider" do
+    FreeMart.register 'key', 'value'
+    FreeMart.register 'key' do |options|
+      FreeMart.request options[:key]
+    end
+    FreeMart.request('key').should == 'value'
+  end
+
   #it "#request should raise error if not found" do
-  #  lambda { FreeMart.request('key') }.should raise_error
+  #  lambda { FreeMart.request('key') }.should raise_error(FreeMart::NotFoundError)
+  #end
+
+  #it "should raise no provider error if no provider exists for the key" do
+  #  lambda { FreeMart.request('key') }.should raise_error(FreeMart::NoProviderError)
   #end
 
   #it "#request_no_error should return NOT_FOUND if not found" do
@@ -81,28 +132,6 @@ describe FreeMart do
   #  lambda { FreeMart.request('b') }.should raise_error
   #  FreeMart.request('c').should == 'cc'
   #end
-
-  it "block should work" do
-    FreeMart.register('key'){ 'value' }
-    FreeMart.request('key').should == 'value'
-  end
-
-  it "parameters are passed to block" do
-    FreeMart.register('key'){|_, *args| args }
-    FreeMart.request('key', 'a', 'b').should == ['a', 'b']
-  end
-
-  it "#register should return a provider" do
-    provider = FreeMart.register('key'){ 'value' }
-    provider.call.should == 'value'
-  end
-
-  it "block with arguments should work" do
-    FreeMart.register('key') do |_, arg1, arg2|
-      "#{arg1} value #{arg2}"
-    end
-    FreeMart.request('key', 'before', 'after').should == 'before value after'
-  end
 
   #it "should support multiple providers for same key" do
   #  FreeMart.register('key') do |index|
