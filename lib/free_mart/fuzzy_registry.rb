@@ -6,7 +6,7 @@ module FreeMart
       @fuzzy_key = fuzzy_key
       if @fuzzy_key.is_a? Array
         @fuzzy_key.each_index do |i|
-          @fuzzy_key[i] = @fuzzy_key[i].to_s if @fuzzy_key.is_a? Symbol
+          @fuzzy_key[i] = @fuzzy_key[i].to_s if @fuzzy_key[i].is_a? Symbol
         end
       end
 

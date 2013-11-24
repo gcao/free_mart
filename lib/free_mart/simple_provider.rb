@@ -1,6 +1,6 @@
 module FreeMart
   class SimpleProvider
-    attr_accessor :options, :proxy
+    attr_accessor :options
 
     def initialize key, value, options
       @key     = key
